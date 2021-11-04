@@ -7,7 +7,7 @@ import android.os.Message;
 import android.util.Log;
 
 
-import com.example.internetofthings.controlGroup.hardwareControl.HardwareControl;
+import realarm.hardware.HardwareControl;
 import com.example.internetofthings.controlGroup.zigbeecontrol.Command;
 
 import java.io.File;

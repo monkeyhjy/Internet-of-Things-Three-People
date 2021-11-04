@@ -5,7 +5,7 @@ import android.os.Bundle;
 import android.os.Message;
 import android.util.Log;
 
-import com.example.internetofthings.controlGroup.hardwareControl.HardwareControl;
+import realarm.hardware.HardwareControl;
 
 import java.io.File;
 import java.io.FileDescriptor;
@@ -475,6 +475,7 @@ public class SensorControl {
         @Override
         public void run() {
             super.run();
+            Log.d("wangyong", "readThread");
             int size;
             int flag = 0;
             int sum = 0;
@@ -482,10 +483,12 @@ public class SensorControl {
             byte[] cmd = new byte[6];
 
             while(isOver ==  false) {
+                Log.d("wangyong", "Read Instruction");
 //            while (!Thread.currentThread().isInterrupted()) {
 
                 try {
                     byte[] buffer = new byte[64];
+                    Log.d("wangyong", mInputStream == null ? "true" : "false");
                     if (mInputStream == null) return;
                     size = mInputStream.read(buffer);
                     if (size > 0) {
