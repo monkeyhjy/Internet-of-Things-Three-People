@@ -39,9 +39,9 @@ class ChargeActivity : AppCompatActivity() {
                 //成功获取卡号
                 3 -> {
                     currentId = extra.getString("Result")
-                    if(currentId == null) {
+                    if (currentId == null) {
                         //do nothing
-                    }else {
+                    } else {
                         Toast.makeText(this@ChargeActivity, "检测到卡片", Toast.LENGTH_LONG).show()
                     }
                 }
@@ -66,6 +66,7 @@ class ChargeActivity : AppCompatActivity() {
         super.onStop()
         unregisterReceiver(mBroadcastReceiver)
     }
+
     override fun onDestroy() {
         super.onDestroy()
         stopService(
@@ -89,10 +90,10 @@ class ChargeActivity : AppCompatActivity() {
     }
 
     private fun queryCard(cardId: String) {
-        if(sp.getInt(currentId, -1)  == -1) {
+        if (sp.getInt(currentId, -1) == -1) {
             //没有记录，请先开卡授权
             Toast.makeText(this, "没有记录,请先开卡授权", Toast.LENGTH_LONG).show()
-        }else {
+        } else {
 
         }
     }
