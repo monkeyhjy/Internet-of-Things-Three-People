@@ -14,7 +14,7 @@
         <service
             android:name=".service.CardService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true" />
 
         <activity
             android:name=".activities.ChargeActivity"

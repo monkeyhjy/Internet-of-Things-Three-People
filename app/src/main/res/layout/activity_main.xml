@@ -95,7 +95,7 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="100dp"
         android:layout_marginBottom="25dp"
-        android:text="具体速率"
+        android:text="x0"
         android:textColor="#FFFFFF"
         android:textSize="36dp"
         app:layout_constraintBottom_toBottomOf="parent"

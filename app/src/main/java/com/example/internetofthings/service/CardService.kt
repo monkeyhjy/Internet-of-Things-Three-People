@@ -6,6 +6,7 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.os.Message
+import android.util.Log
 import com.example.internetofthings.activities.ChargeActivity
 import com.example.internetofthings.activities.MainActivity
 import com.example.internetofthings.controlGroup.rfidcontrol.ModulesControl
@@ -15,8 +16,10 @@ class CardService : Service() {
     private lateinit var mModuleController: ModulesControl
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        Log.d("wangyong", "startService")
         val uiHandler = object : Handler(Looper.getMainLooper()) {
             override fun handleMessage(msg: Message?) {
+                Log.d("wangyong", "handle Message")
                 val broadCastIntent = Intent()
                 when (intent?.extras?.getString("type")) {
                     ChargeActivity.TYPE -> broadCastIntent.action = ChargeActivity.ACTION
@@ -27,20 +30,20 @@ class CardService : Service() {
                     Command.HF_TYPE.toInt() -> {
                         val data = msg.data
                         if (!data.getBoolean("result")) {
-                            intent.apply {
+                            broadCastIntent.apply {
                                 putExtra("what", 1)
                                 putExtra(
                                     "Result",
                                     "设置工作模式失败"
                                 )
                             }
-                            sendBroadcast(intent)
+                            sendBroadcast(broadCastIntent)
                         }
                     }
                     Command.HF_FREQ.toInt() -> {
                         val data = msg.data
                         if (!data.getBoolean("result")) {
-                            intent.apply {
+                            broadCastIntent.apply {
                                 putExtra("what", 1)
                                 if (data.getBoolean("Result")) {
                                     putExtra("Result", "打开射频失败")
@@ -48,24 +51,24 @@ class CardService : Service() {
                                     putExtra("Result", "关闭射频失败")
                                 }
                             }
-                            sendBroadcast(intent)
+                            sendBroadcast(broadCastIntent)
                         }
                     }
                     Command.HF_ACTIVE.toInt() -> {
                         val data = msg.data
                         if (!data.getBoolean("result")) {
-                            intent.apply {
+                            broadCastIntent.apply {
                                 putExtra("what", 2)
                             }
-                            sendBroadcast(intent)
+                            sendBroadcast(broadCastIntent)
                         }
                     }
                     Command.HF_ID.toInt() -> {
                         val data = msg.data
-                        intent.putExtra("what", 3)
+                        broadCastIntent.putExtra("what", 3)
                         if (data.getBoolean("result")) {
-                            intent.putExtra("Result", data.getString("cardNo"))
-                            sendBroadcast(intent)
+                            broadCastIntent.putExtra("Result", data.getString("cardNo"))
+                            sendBroadcast(broadCastIntent)
                         } else {
                             // do nothing
                         }

@@ -828,7 +828,7 @@ public class ModulesControl {
             byte[] g_ReceiveData = new byte[MAX_RECEIVE_DATA_LEN];
             //记录返回指令类型
             byte whichCmd = 0;
-
+            Log.d("wangyong", "READ RFID");
 //            while(isOver == false) {
             while (!Thread.currentThread().isInterrupted()) {
                 try {

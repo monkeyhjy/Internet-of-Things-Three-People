@@ -99,7 +99,8 @@
             android:hint="点击输入充值金额："
             android:textColor="#FFFFFF"
             android:textColorHint="#FFFFFF"
-            android:textSize="32dp" />
+            android:textSize="32dp"
+            android:inputType="number"/>
 
         <Button
             android:id="@+id/pay"

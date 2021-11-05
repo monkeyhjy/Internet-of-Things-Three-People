@@ -10,6 +10,8 @@ import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.internetofthings.R
+import com.example.internetofthings.controlGroup.rfidcontrol.ModulesControl
+import com.example.internetofthings.controlGroup.zigbeecontrol.Command
 import com.example.internetofthings.controlGroup.zigbeecontrol.SensorControl
 import com.example.internetofthings.databinding.ActivityMainBinding
 import com.example.internetofthings.service.CardService
@@ -22,64 +24,128 @@ class MainActivity : AppCompatActivity() {
         const val ACTION = "RESUME_ACTION"
         const val SP_NAME = "CARD"
     }
-
+    private var rate:Int = 0
     //存储卡相关数据的sp
-    private val sp = this.getSharedPreferences(SP_NAME, MODE_PRIVATE)
+    private lateinit var sp:SharedPreferences
 
     //当前卡的id
     private var currentId: String? = null
     private lateinit var binding: ActivityMainBinding
-    private lateinit var mSensorControl: SensorControl
-    private val mHandler = object : Handler(Looper.getMainLooper()) {
-        override fun handleMessage(msg: Message) {
-            Log.d("wangyong", "handleMessage")
-            val data = msg.data
-            when (msg.what) {
-                LED_STATUS_MSG -> {
-                    when (data.getInt("led_id")) {
-                        0x01 -> {
-                            isLed1On = if (data.getInt("led_status") == 0x01) {
-                                binding.led1.setImageResource(R.drawable.smarthome_led_on)
-                                true
+//    private lateinit var mSensorControl: SensorControl
+    private lateinit var mModulesControl: ModulesControl
+//    private val mHandler = object : Handler(Looper.getMainLooper()) {
+//        override fun handleMessage(msg: Message) {
+//            Log.d("wangyong", "handleMessage")
+//            val data = msg.data
+//            when (msg.what) {
+//                LED_STATUS_MSG -> {
+//                    when (data.getInt("led_id")) {
+//                        0x01 -> {
+//                            isLed1On = if (data.getInt("led_status") == 0x01) {
+//                                binding.led1.setImageResource(R.drawable.smarthome_led_on)
+//                                true
+//                            } else {
+//                                binding.led1.setImageResource(R.drawable.smarthome_led_off)
+//                                false
+//                            }
+//                        }
+//                        0x02 -> {
+//                            isLed2On = if (data.getInt("led_status") == 0x01) {
+//                                binding.led2.setImageResource(R.drawable.smarthome_led_on)
+//                                true
+//                            } else {
+//                                binding.led2.setImageResource(R.drawable.smarthome_led_off)
+//                                false
+//                            }
+//                        }
+//                        0x03 -> {
+//                            isLed3On = if (data.getInt("led_status") == 0x01) {
+//                                binding.led3.setImageResource(R.drawable.smarthome_led_on)
+//                                true
+//                            } else {
+//                                binding.led3.setImageResource(R.drawable.smarthome_led_off)
+//                                false
+//                            }
+//                        }
+//                        0x04 -> {
+//                            isLed4On = if (data.getInt("led_status") == 0x01) {
+//                                binding.led4.setImageResource(R.drawable.smarthome_led_on)
+//                                true
+//                            } else {
+//                                binding.led4.setImageResource(R.drawable.smarthome_led_off)
+//                                false
+//                            }
+//                        }
+//                        else -> {
+//                            // do nothing
+//                        }
+//                    }
+//                }
+//                else -> {
+//                    //do nothing
+//                }
+//            }
+//            super.handleMessage(msg)
+//        }
+//    }
+    private val uiHandler = object : Handler(Looper.getMainLooper()) {
+        override fun handleMessage(msg: Message?) {
+            Log.d("wangyong", "handle Message")
+            val broadCastIntent = Intent(ACTION)
+//            when (intent?.extras?.getString("type")) {
+//                ChargeActivity.TYPE -> broadCastIntent.action = ChargeActivity.ACTION
+//                MainActivity.TYPE -> broadCastIntent.action = MainActivity.ACTION
+//                else -> return
+//            }
+            when (msg?.what) {
+                Command.HF_TYPE.toInt() -> {
+                    val data = msg.data
+                    if (!data.getBoolean("result")) {
+                        broadCastIntent.apply {
+                            putExtra("what", 1)
+                            putExtra(
+                                "Result",
+                                "设置工作模式失败"
+                            )
+                        }
+                        sendBroadcast(broadCastIntent)
+                    }
+                }
+                Command.HF_FREQ.toInt() -> {
+                    val data = msg.data
+                    if (!data.getBoolean("result")) {
+                        broadCastIntent.apply {
+                            putExtra("what", 1)
+                            if (data.getBoolean("Result")) {
+                                putExtra("Result", "打开射频失败")
                             } else {
-                                binding.led1.setImageResource(R.drawable.smarthome_led_off)
-                                false
+                                putExtra("Result", "关闭射频失败")
                             }
                         }
-                        0x02 -> {
-                            isLed2On = if (data.getInt("led_status") == 0x01) {
-                                binding.led2.setImageResource(R.drawable.smarthome_led_on)
-                                true
-                            } else {
-                                binding.led2.setImageResource(R.drawable.smarthome_led_off)
-                                false
-                            }
+                        sendBroadcast(broadCastIntent)
+                    }
+                }
+                Command.HF_ACTIVE.toInt() -> {
+                    val data = msg.data
+                    if (!data.getBoolean("result")) {
+                        broadCastIntent.apply {
+                            putExtra("what", 2)
                         }
-                        0x03 -> {
-                            isLed3On = if (data.getInt("led_status") == 0x01) {
-                                binding.led3.setImageResource(R.drawable.smarthome_led_on)
-                                true
-                            } else {
-                                binding.led3.setImageResource(R.drawable.smarthome_led_off)
-                                false
-                            }
-                        }
-                        0x04 -> {
-                            isLed4On = if (data.getInt("led_status") == 0x01) {
-                                binding.led4.setImageResource(R.drawable.smarthome_led_on)
-                                true
-                            } else {
-                                binding.led4.setImageResource(R.drawable.smarthome_led_off)
-                                false
-                            }
-                        }
-                        else -> {
-                            // do nothing
-                        }
+                        sendBroadcast(broadCastIntent)
+                    }
+                }
+                Command.HF_ID.toInt() -> {
+                    val data = msg.data
+                    broadCastIntent.putExtra("what", 3)
+                    if (data.getBoolean("result")) {
+                        broadCastIntent.putExtra("Result", data.getString("cardNo"))
+                        sendBroadcast(broadCastIntent)
+                    } else {
+                        // do nothing
                     }
                 }
                 else -> {
-                    //do nothing
+                    // do nothing
                 }
             }
             super.handleMessage(msg)
@@ -87,16 +153,20 @@ class MainActivity : AppCompatActivity() {
     }
     private val mBroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
+            Log.d("wangyong", "onReceive")
             val extra = intent?.extras ?: return
+            Log.d("hjy", extra.getInt("what").toString())
             when (extra.getInt("what")) {
                 //初始化错误
                 1 -> {
-                    Toast.makeText(this@MainActivity, "初始化错误", Toast.LENGTH_LONG).show()
+                    binding.balanceValue1.setText("未检测到卡片")
+//                    Toast.makeText(this@MainActivity, "初始化错误", Toast.LENGTH_LONG).show()
                 }
                 2 -> {
-                    Toast.makeText(
-                        this@MainActivity, "未检测到卡", Toast.LENGTH_LONG
-                    ).show()
+                    binding.balanceValue1.setText("未检测到卡片")
+//                    Toast.makeText(
+//                        this@MainActivity, "未检测到卡", Toast.LENGTH_LONG
+//                    ).show()
                 }
                 //成功获取卡号
                 3 -> {
@@ -104,7 +174,13 @@ class MainActivity : AppCompatActivity() {
                     if (currentId == null) {
                         //do nothing
                     } else {
-                        Toast.makeText(this@MainActivity, "检测到卡片", Toast.LENGTH_LONG).show()
+//                        Toast.makeText(this@MainActivity, "检测到卡片:"+currentId, Toast.LENGTH_SHORT).show()
+                        val money = sp.getInt(currentId,-1)
+                        if(money == -1){
+                           binding.balanceValue1.setText("请开卡")
+                        }else{
+                            binding.balanceValue1.setText(money.toString())
+                        }
                     }
                 }
             }
@@ -121,7 +197,7 @@ class MainActivity : AppCompatActivity() {
                 what = LED_STATUS_MSG
                 data = bundle
             }
-            mHandler.sendMessage(msg)
+//            mHandler.sendMessage(msg)
             Log.d("wangyong", "LedListener")
         }
 
@@ -134,12 +210,14 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         initEvent()
+        sp = getSharedPreferences(SP_NAME, MODE_PRIVATE)
     }
 
     override fun onStart() {
         super.onStart()
         Log.d("wangyong", "onStart")
-        mSensorControl.actionControl(true)
+//        mSensorControl.actionControl(true)
+        mModulesControl.actionControl(true)
         val intentFilter = IntentFilter(ACTION)
         registerReceiver(mBroadcastReceiver, intentFilter)
     }
@@ -147,7 +225,8 @@ class MainActivity : AppCompatActivity() {
     override fun onStop() {
         super.onStop()
         Log.d("wangyong", "onStop")
-        mSensorControl.actionControl(false)
+//        mSensorControl.actionControl(false)
+        mModulesControl.actionControl(false)
         unregisterReceiver(mBroadcastReceiver)
     }
 
@@ -158,42 +237,87 @@ class MainActivity : AppCompatActivity() {
                 this, CardService::class.java
             )
         )
-        mSensorControl.removeLedListener(ledListener)
-        mSensorControl.closeSerialDevice()
+//        mSensorControl.removeLedListener(ledListener)
+//        mSensorControl.closeSerialDevice()
+        mModulesControl.closeSerialDevice()
     }
 
     private fun initEvent() {
-        mSensorControl = SensorControl().apply {
-            addLedListener(ledListener)
-        }
+//        mSensorControl = SensorControl().apply {
+//            addLedListener(ledListener)
+//        }
+        mModulesControl = ModulesControl(uiHandler)
         binding.led1.setOnClickListener {
-            if (isLed1On) {
-                mSensorControl.led1_Off(false)
-            } else {
-                mSensorControl.led1_On(false)
+            isLed1On = !isLed1On
+            if(isLed1On){
+                rate++
+                binding.led1.setImageResource(R.drawable.smarthome_led_on)
+            }else{
+                rate--
+                binding.led1.setImageResource(R.drawable.smarthome_led_off)
             }
+            binding.speedValue.setText("x"+rate.toString())
         }
         binding.led2.setOnClickListener {
-            if (isLed2On) {
-                mSensorControl.led2_Off(false)
-            } else {
-                mSensorControl.led2_On(false)
+            isLed2On=!isLed2On
+            if(isLed2On){
+                rate++
+                binding.led2.setImageResource(R.drawable.smarthome_led_on)
+            }else{
+                rate--
+                binding.led2.setImageResource(R.drawable.smarthome_led_off)
             }
+            binding.speedValue.setText("x"+rate.toString())
         }
         binding.led3.setOnClickListener {
-            if (isLed3On) {
-                mSensorControl.led3_Off(false)
-            } else {
-                mSensorControl.led3_On(false)
+            isLed3On=!isLed3On
+            if(isLed3On){
+                rate++
+                binding.led3.setImageResource(R.drawable.smarthome_led_on)
+            }else{
+                rate--
+                binding.led3.setImageResource(R.drawable.smarthome_led_off)
             }
+            binding.speedValue.setText("x"+rate.toString())
         }
         binding.led4.setOnClickListener {
-            if (isLed4On) {
-                mSensorControl.led4_Off(false)
-            } else {
-                mSensorControl.led4_On(false)
+            isLed4On=!isLed4On
+            if(isLed4On){
+                rate++
+                binding.led4.setImageResource(R.drawable.smarthome_led_on)
+            }else{
+                rate--
+                binding.led4.setImageResource(R.drawable.smarthome_led_off)
             }
+            binding.speedValue.setText("x"+rate.toString())
         }
+//            if (isLed1On) {
+//                mSensorControl.led1_Off(false)
+//            } else {
+//                mSensorControl.led1_On(false)
+//            }
+//        }
+//        binding.led2.setOnClickListener {
+//            if (isLed2On) {
+//                mSensorControl.led2_Off(false)
+//            } else {
+//                mSensorControl.led2_On(false)
+//            }
+//        }
+//        binding.led3.setOnClickListener {
+//            if (isLed3On) {
+//                mSensorControl.led3_Off(false)
+//            } else {
+//                mSensorControl.led3_On(false)
+//            }
+//        }
+//        binding.led4.setOnClickListener {
+//            if (isLed4On) {
+//                mSensorControl.led4_Off(false)
+//            } else {
+//                mSensorControl.led4_On(false)
+//            }
+//        }
         binding.goToCharge.setOnClickListener {
             startActivity(
                 Intent(this, ChargeActivity::class.java)
