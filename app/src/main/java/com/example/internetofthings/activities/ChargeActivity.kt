@@ -52,8 +52,8 @@ class ChargeActivity : AppCompatActivity() {
                         //do nothing
                     } else {
                         id = currentId
-                        val money = sp.getInt(id,-1)
-                        if(money==-1){
+                        val money = sp.getInt(id,-10)
+                        if(money==-10){
                             binding.balanceValue2.setText("请开卡")
                         }else {
                             binding.balanceValue2.setText(money.toString())
@@ -162,9 +162,7 @@ class ChargeActivity : AppCompatActivity() {
     private fun initEvent() {
         mModulesControl = ModulesControl(uiHandler)
         binding.back.setOnClickListener {
-            startActivity(
-                Intent(this, MainActivity::class.java)
-            )
+            finish()
         }
 //        startService(
 //            Intent(this, CardService::class.java).apply {
@@ -172,7 +170,7 @@ class ChargeActivity : AppCompatActivity() {
 //            }
 //        )
         binding.applyCard.setOnClickListener {
-            if(id!=null&&sp.getInt(id,-1)==-1) {
+            if(id!=null&&sp.getInt(id,-10)==-10) {
                 sp.edit().apply {
                     putInt(id, 0)
                     apply()
@@ -181,7 +179,7 @@ class ChargeActivity : AppCompatActivity() {
             }
         }
         binding.destroyCard.setOnClickListener {
-            if(sp.getInt(id,-1)!=-1) {
+            if(sp.getInt(id,-10)!=-10) {
                 sp.edit().apply {
                     remove(id)
                     apply()
@@ -190,7 +188,7 @@ class ChargeActivity : AppCompatActivity() {
             }
         }
         binding.pay.setOnClickListener {
-            if(sp.getInt(id,-1)!=-1) {
+            if(sp.getInt(id,-10)!=-10) {
                 val old_money: Int = sp.getInt(id, -1)
                 sp.edit().apply() {
                     putInt(id, old_money + Integer.parseInt(binding.money.text.toString()))

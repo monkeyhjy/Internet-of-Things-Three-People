@@ -138,7 +138,7 @@ public class ModulesControl {
             if (baudrate == Command.hfBautrate) {
                 return;
             } else {
-                HardwareControl.CloseSerialPort();
+//                HardwareControl.CloseSerialPort();
                 isUartOpened = false;
                 rfidPort = Command.hfRfidPort;
                 baudrate = Command.hfBautrate;
